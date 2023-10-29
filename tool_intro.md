@@ -56,4 +56,5 @@ unityLearn：https://learn.unity.com/projects （包含入门、中高级知识�
     - 官方资源 Unity Learn ：SURIYUN、WeMakeTheGame、2D Game Kit,3D Game Kit (Lite) 、FPS MicroGame （第一人称射击类游戏包） 和 Karting MicroGame （第三人称驾驶类游戏包）
 
     - MIXAMO
-    ![Alt text](./image/action.png)
+
+        ![Alt text](./image/action.png)
