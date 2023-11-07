@@ -32,9 +32,9 @@ C#：《C#本质论》、菜鸟教程
 Unity：《Unity 5.x 从入门到精通》、《Unity 2D 游戏开发教程》
 
 
-unity中文文档：https://docs.unity.cn/cn/current/Manual/index.html
+Unity 中文文档：https://docs.unity.cn/cn/current/Manual/index.html
 
-unityLearn：https://learn.unity.com/projects （包含入门、中高级知识）
+Unity Learn：https://learn.unity.com/projects （包含入门、中高级知识）
 
 动作资源：https://www.wemakethegame.com/
 
