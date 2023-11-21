@@ -39,9 +39,13 @@ Temp、Library、Assets （存储资源文件）、PrjectSettings、Logs、Packa
 
 
 在 Scene 视图中：
+
 鼠标左键：在场景中选择你的游戏对象。
+
 鼠标中键并拖动：使用手形工具平移 Scene 视图。
+
 鼠标右键并拖动（alt + 左键）：使用飞越模式（手形工具的一种变体）旋转 Scene 视图。
+
 鼠标中键滚动（alt + 右键）：拉远拉近 Scene 视图
 
 F - 聚焦选择的对象。如果忘记了游戏对象在场景中的位置，只需在 Hierarchy 中选择该游戏对象，然后按 F 键使该游戏对象在 Scene 视图中居中。
@@ -84,22 +88,71 @@ horizontalInput = Input.GetAxis("Horizontal");
 
 
 
-## 2. 组件 Component
+## 2. 游戏对象
+
+在 Unity 中有游戏中的每个物体都是 **游戏对象（GameObject）**，比如人物、道具、灯光、特效、光源、摄像机等，通过设置相关的 **组件 （Component）** 来调整游戏对象的属性。
+
+在脚本代码中：
+
+`GameObject a = GameObject.Find("GameObjName")` ：取指定名称的游戏对象，甚至可以获取到游戏对象的脚本组件的内容；
+
+ `XXX a = GetComponent<XXX>()`：获取游戏对象中的组件
+
+```C#
+private PlayerController playerControllerScript;
+void Start()
+{
+    playerControllerScript = GameObject.Find("Player").GetComponent<PlayerController>();
+}
+////////////////////////////////////////////////////////
+private Rigidbody playerRb;
+void Start()
+{
+    playerRb = GetComponent<Rigidbody>();
+    Physics.gravity *= gravityModifier;
+}
+```
+
+
+### 2.1 游戏对象标签
+
+游戏对象可以添加、设置类别标签 Tag：
+
+![Alt text](image-12.png)
+
+在脚本代码中：
+
+`gameObject.CompareTag("TagName")`：判断当前游戏对象的标签类型
+```C#
+private void OnCollisionEnter(Collision other) {
+    if (other.gameObject.CompareTag("Ground")){
+        isOnGround = true;
+    } else if (other.gameObject.CompareTag("Obstacle")){
+        gameOver = true;
+        Debug.Log("Game Over!");
+    }
+}
+```
+
+
+
+## 3. 组件 Component
 
 游戏对象包含了多项 `Component` （Transform、Mesh Renderer 等），在 `Inspector` 窗口 使用 `Add Component` 可为游戏对象添加不同功能的 `Component`
 
+
 ![Alt text](image-3.png)
 
-### 2.1 角色控制器
+### 3.1 角色控制器
 
-通过 C# 脚本控制游戏对象的行为 （继承于 `MonoBehaviour` 类），脚本作为 Component 添加给对应的游戏对象，一个脚本可以用到多个游戏对象，一个游戏对象可以使用多个脚本
+通过 C# 脚本控制游戏对象的行为 （继承于 `MonoBehaviour` 类），脚本作为 Component 添加给对应的游戏对象，一个脚本可以用到多个游戏对象（类内部包含一个 `gameObject` 对象表示对应的游戏对象），一个游戏对象可以使用多个脚本，
 
 
 （创建 Scripts 文件夹，创建 C# 脚本文件）
 
 - 通过 `Input.GetAxis("XXX")` 获取指定的输入的属性值
 
-- `transform` 类对象包含游戏对象的位置、角度、尺寸等属性，通过 `transform.XXX` 获取对应属性，并操控游戏对象移动，比如：（ 其中 `Vector.forward` = (0,0,1) ）
+- `transform` 类对象包含游戏对象的位置、角度、尺寸等属性，通过 `transform.XXX` 获取对应属性，并操控游戏对象移动，比如：
 
 ```C#
 transform.Translate(Vector3.forward * Time.deltaTime * speed)
@@ -160,41 +213,81 @@ public class FollowPlayer : MonoBehaviour
 }
 ```
 
-### 2.2 RigidBody & Collider
+### 3.2 RigidBody & Collider
 
-刚体与对撞机常用于子弹碰撞、物体碰撞、物体下落等场景
+刚体与碰撞体常用于子弹碰撞、物体碰撞、物体下落等场景
+
+- 刚体 （Rigidbody）
+
+    `RigidBody` 刚体组件使得游戏对象具有物理属性，`Mass` 为质量，`Use Gravity` 表示是否使用重力
+
+    ![Alt text](image-6.png)
+
+- 碰撞体
+
+    碰撞体要与刚体一起添加到游戏对象上才能触发碰撞（没有碰撞体的刚体会彼此相互穿过），可以触发对撞事件（勾选 `Is Trigger`），可用于子弹攻击碰撞、攻击毁坏物体等碰撞场景
+
+    `Mesh Collider` 网格对撞机
+
+    ![Alt text](image-7.png)
+
+    `Box Collider` 箱型对撞机
+
+    ![Alt text](image-9.png)
+
+    （`Box Collider` 可以通过 `Edit Collider` 的图标在 Scene 窗口中编辑碰撞箱型尺寸）
 
 
-`RigidBody` 刚体组件，`Mass` 为质量，`Use Gravity` 表示是否使用重力
+    碰撞体的触发事件：重写 `OnTriggerEnter()` 函数，并且将脚本添加到碰撞对象上（比如子弹）
 
-![Alt text](image-6.png)
+    ```C#
+    private void OnTriggerEnter(Collider other) {
+            Destroy(gameObject);        // 销毁当前游戏对象
+            Destroy(other.gameObject);  // 销毁另一个碰撞对象
+    }
+    ```
 
+碰撞事件监测方法：
 
-对撞机可以触发对撞事件（勾选 `Is Trigger`），可用于子弹攻击碰撞、攻击毁坏物体等碰撞场景
+`OnCollisionEnter(Collision)`： 当碰撞开始时调用，只会调用该方法一次
+`OnCollisionExit(Collision)`：当碰撞结束时调用，只会调用该方法一次
+`OnCollisionStay(Collision)`：当碰撞进行中时，会持续调用该方法
 
-`Mesh Collider` 网格对撞机
+（`Collision coll` 参数：用于传递碰撞信息对象，通过 `coll.gameObject` 可以获取被碰撞的对象，比如脚本绑定到子弹上，那么子弹打箱子，就会得到引用箱子的信息）
 
-![Alt text](image-7.png)
-
-`Box Collider` 箱型对撞机
-
-![Alt text](image-9.png)
-
-（`Box Collider` 可以通过 `Edit Collider` 的图标在 Scene 窗口中编辑碰撞箱型尺寸）
-
-
-碰撞体的触发事件：重写 `OnTriggerEnter()` 函数，并且将对应的脚本添加到碰撞对象上（比如子弹）
+通过刚体和碰撞检测，为人物实现简单的跳跃：
+1. 获取游戏人物的 `Rigidbody` 组件，通过 `Physics.gravity` 可以设置重力系数
+2. 通过对 `Rigidbody` 组件调用 `AddForce(Vector3, ForceMode)` 函数为游戏人物添加一个力实现跳跃（设置力的方向，发力模式）
 
 ```C#
- private void OnTriggerEnter(Collider other) {
-        Destroy(gameObject);        // 销毁当前游戏对象
-        Destroy(other.gameObject);  // 销毁另一个碰撞对象
+private Rigidbody playerRb;
+public float jumpForce;
+public float gravityModifier;
+public bool isOnGround = true;
+public bool gameOver = false;
+void Start(){
+    playerRb = GetComponent<Rigidbody>();
+    Physics.gravity *= gravityModifier;
+}
+void Update(){
+    if (Input.GetKeyDown(KeyCode.Space) && isOnGround){
+        playerRb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+        isOnGround = false;
+    }
+}
+private void OnCollisionEnter(Collision other) {
+    if (other.gameObject.CompareTag("Ground")){
+        isOnGround = true;
+    } else if (other.gameObject.CompareTag("Obstacle")){
+        gameOver = true;
+        Debug.Log("Game Over!");
+    }
 }
 ```
 
 
 
-## 3. 瓦片地图 Tilemap
+## 4. 瓦片地图 Tilemap
 
 
 瓦片地图不会直接使用精灵，通过在Hierarchy 窗口右击 > 2D Object > Tilemap 创建瓦片地图 （包含Rectangle、Hexagonal等多种瓦片类型）
@@ -205,7 +298,7 @@ public class FollowPlayer : MonoBehaviour
 
 （update...）
 
-## 4. 预制件 Prefab
+## 5. 预制件 Prefab
 
 如果要在场景中的多个位置或项目中的多个场景之间重用以特定方式配置的游戏对象，比如非玩家角色 (NPC)、道具或景物，则应将此游戏对象转换为预制件。这种方式比简单复制和粘贴游戏对象更好，因为预制件系统可以自动保持所有副本同步
 
@@ -227,6 +320,76 @@ if (Input.GetKeyDown(KeyCode.Space)){
     Instantiate(projectile, transform.position, projectile.transform.rotation);
 }
 ```
+
+## 6. 动画、粒子效果与音频
+
+### 6.1 动画
+
+（update）
+
+在游戏对象中添加 Animator 组件，设置动画内容
+
+![Alt text](image-13.png)
+
+动画的条件参数：
+
+![Alt text](image-15.png)
+
+
+![Alt text](image-14.png)
+
+```C#
+private Animator playerAnim;
+void Start(){
+    playerAnim = GetComponent<Animator>();
+}
+
+// 通过设置状态条件触发指定动画
+playerAnim.SetTrigger("Jump_trig");
+playerAnim.SetBool("Death_b", true);
+playerAnim.SetInteger("DeathType_int", 1);
+
+```
+
+
+### 6.2 粒子效果 Particle
+
+（update）
+
+将预制件的粒子效果拖拽到场景，代码中声明粒子类型对象 `ParticleSystem` ，Unity 中拖拽粒子特效对象进行赋值，代码调用函数控制粒子效果播放
+
+![Alt text](image-16.png)
+
+```C#
+public ParticleSystem explosionParticle;
+public ParticleSystem dirtParticle;
+
+dirtParticle.Play();
+dirtParticle.Stop();
+// ...
+```
+
+### 6.3 音频
+
+游戏对象中添加 `Audio Source` 组件来播放声音，例如在 `Main Camera` 中添加 `Audio Listener` 来听取声音，通过 `Audio Source` 播放背景音乐（为其赋值音频对象，loop 设置为 true 以循环播放）；
+
+在代码中，声明 `AudioClip` 对象，Unity 中拖拽声音特效进行赋值；代码中 `GetComponent<AudioSource>()` 获取音频源组件对象，通过该对象调用相关函数播放声音特效
+
+
+```C#
+public AudioClip crushSound;
+public AudioClip jumpSound;
+
+void Start(){
+    playerAudio = GetComponent<AudioSource>();
+    //...
+}
+
+playerAudio.PlayOneShot(jumpSound, 1.0f);
+playerAudio.PlayOneShot(crushSound, 1.0f);
+
+```
+
 
 ## Unity 开发技巧
 
@@ -303,6 +466,34 @@ if (Input.GetKeyDown(KeyCode.Space)){
 
 ![Alt text](image-11.png)
 
+```C#
+// Destroy out of bounds
+public float topBound = 50.0f;
+public float downBound = -20.0f;
+void Update()
+{
+    if (transform.position.z >= topBound){
+        Destroy(gameObject);
+    } else if (transform.position.z <= downBound){
+        Destroy(gameObject);
+    }
+}
+
+// Move forward
+public float MoveSpeed = 40.0f;
+void Update()
+{
+    transform.Translate(transform.forward * MoveSpeed * Time.deltaTime);
+}
+
+// Detect collisions
+private void OnTriggerEnter(Collider other) {
+    Destroy(gameObject);
+    Destroy(other.gameObject);
+}
+```
+
+
 
 
 ### 3. 多人游戏
@@ -320,7 +511,7 @@ if (Input.GetKeyDown(KeyCode.Space)){
 
 Unity 中使用 Random.Range(a, b) 可以生成整数，范围： [a, b)
 
-创建一个 SpawnManager 脚本，用于管理游戏对象的生成：
+在 `Hierarchy` 创建一个空的游戏对象（右键 > Create Empty），并且为该游戏对象创建一个 SpawnManager 脚本，用于管理游戏对象的生成：
 
 1. 创建游戏对象数组作为成员变量，内部包含各种待生成的游戏对象（通过 Unity 界面拖拽对应的预制件进行数组的赋值）
 
