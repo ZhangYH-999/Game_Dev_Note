@@ -211,6 +211,10 @@ public class FollowPlayer : MonoBehaviour
         transform.position = player.transform.position + offset;
     }
 }
+
+/*
+Vector3.MoveTowards(transform.position, playerRunPos, 3.0f * Time.deltaTime);
+*/
 ```
 
 ### 3.2 RigidBody & Collider
